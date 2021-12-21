@@ -4,7 +4,8 @@ from PIL import Image
 import numpy as np
 from matplotlib import pyplot as plt
 
-from main import trans
+import model
+
 lebles = ['1', '0']
 
 
@@ -21,11 +22,12 @@ def my_predict(path):
     # plt.imshow(thresh)
     # plt.show()
     demo_img = Image.fromarray(np.uint8(resized_img)).convert('RGB')
-    demo_img = trans(demo_img).permute(1, 2, 0)
+    transform = model.get_transform()
+    demo_img = transform(demo_img)  # .permute(1, 2, 0)
     demo_img = Image.fromarray(np.uint8(demo_img)).convert('RGB')
     # print(type(demo_img))
 
-    demo_img = trans(demo_img)
+    demo_img = transform(demo_img)
     img = demo_img.unsqueeze(0)
     with open('simplenet.pth', 'rb') as f:
         simplenet = pickle.load(f)

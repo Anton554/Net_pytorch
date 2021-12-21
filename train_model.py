@@ -1,16 +1,14 @@
 import pickle
-
 import torch
 from torch.nn import functional as F
 import torch.optim as optim
-from xml.parsers.expat import model
 
-from main import SimpleNet
-import main
+
+import model
 
 
 def train(model, optimizer, loss_fn, train_loader, val_loader, epochs=10):
-    """
+    """ Обучение нейронной сети
 
     :param model: объект класса SimpleNet - модель нейронной сети
     :param optimizer: объект оптимизатор с алгоритмом "Адам"
@@ -29,16 +27,26 @@ def train(model, optimizer, loss_fn, train_loader, val_loader, epochs=10):
         for batch in train_loader:
             # После каждого батча обнуляем градиент
             optimizer.zero_grad()
-            # inputs - Tensor (64, 3, 28, 38) - картинки для обучения
+            # inputs - Tensor (64, 3, 28, 28) - картинки для обучения
             # targets - правильный ответ Tensor(64,)
             inputs, targets = batch
             # копируем Tensor в память cpu
             inputs = inputs.to('cpu')
-            target = targets.to('cpu')
+            targets = targets.to('cpu')
+
+            # print(f'{inputs.shape=}')
+            # print(f'{targets.shape=}')
+            # print(f'{targets=}')
+
             # Предсказываем значаение ОБУЧАЮЩЕГО картинки
             output = model(inputs)
+            # print(f'{output.shape=}')
+            # print(f'{output=}')
+
             # вычисление значения "функции потерь"
-            loss = loss_fn(output, target)
+            loss = loss_fn(output, targets)
+            # return None
+
             # вычисление градиента "функции потерь" (вектор направление)
             loss.backward()
             # обновление градиента "функции потерь" обратное распространение ошибки
@@ -72,7 +80,7 @@ def train(model, optimizer, loss_fn, train_loader, val_loader, epochs=10):
              в данном измерении dim
             3) eq вычисляет поэлементное равнство
             4) получаем тензор tensor([ True,  True,  True,  True])"""
-            correct = torch.eq(torch.max(F.softmax(output), dim=1)[1], targets).view(-1)
+            correct = torch.eq(torch.max(F.softmax(output, dim=1), dim=1)[1], targets).view(-1)
             # кол-во правильных ответов
             num_correct += torch.sum(correct).item()
             # накапливаем общее кол-во проверок
@@ -112,8 +120,16 @@ def test(model, test_loader):
 
 
 if __name__ == "__main__":
-    simplenet = SimpleNet()
+    # Создание загрузчика
+    loader = model.DtLoader('./img/train', './img/val', './img/test')
+    print('Загрузчик создан')
+    simplenet = model.SimpleNet()
     optimizator = optim.Adam(simplenet.parameters(), lr=0.001)
-    train(simplenet, optimizator, torch.nn.CrossEntropyLoss(), main.train_data_loader, main.val_data_loader)
-    with open('simplenet.pth', 'wb') as f:
-        pickle.dump(simplenet, f)
+    print('Запуск обучения')
+    train(simplenet, optimizator, torch.nn.CrossEntropyLoss(), loader.train_data_loader, loader.val_data_loader)
+    print('Сохранение модели')
+    torch.save(simplenet, 'simplenet.pth')
+    print('Модель сохранена.')
+
+    # Загрузка модели
+    # simplenet = torch.load('simplenet.pth')
