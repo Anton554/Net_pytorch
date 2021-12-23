@@ -51,6 +51,7 @@ def predict_folder(path:str, sub_path:str):
         pred = predict(net, img)
         if pred == int(sub_path):
             cn += 1
+        print('------------------')
     prc = round((cn / len(ls_img)) * 100, 2)
     print('========================')
     print(f'Процент предсказаний {prc} %')
