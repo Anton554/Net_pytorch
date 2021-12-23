@@ -33,16 +33,13 @@ def train(model, optimizer, loss_fn, train_loader, val_loader, epochs=10):
             # копируем Tensor в память cpu
             inputs = inputs.to('cpu')
             targets = targets.to('cpu')
-
             # print(f'{inputs.shape=}')
             # print(f'{targets.shape=}')
             # print(f'{targets=}')
-
             # Предсказываем значаение ОБУЧАЮЩЕГО картинки
             output = model(inputs)
             # print(f'{output.shape=}')
             # print(f'{output=}')
-
             # вычисление значения "функции потерь"
             loss = loss_fn(output, targets)
             # return None
@@ -127,9 +124,9 @@ if __name__ == "__main__":
     optimizator = optim.Adam(simplenet.parameters(), lr=0.001)
     print('Запуск обучения')
     train(simplenet, optimizator, torch.nn.CrossEntropyLoss(), loader.train_data_loader, loader.val_data_loader)
-    print('Сохранение модели')
-    torch.save(simplenet, 'simplenet.pth')
-    print('Модель сохранена.')
+    # print('Сохранение модели')
+    # torch.save(simplenet, 'simplenet.pth')
+    # print('Модель сохранена.')
 
     # Загрузка модели
     # simplenet = torch.load('simplenet.pth')

@@ -64,7 +64,6 @@ class SimpleNet(nn.Module):
             plt.show()
 
 
-
     def forward(self, x):
         # оставляем один канал цвета
         x = x[:,:1,:,:]
