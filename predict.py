@@ -1,46 +1,33 @@
-import pickle
-import cv2
+import torch
+from torch.nn import functional as F
 from PIL import Image
-import numpy as np
-from matplotlib import pyplot as plt
-
 import model
+import os
 
-lebles = ['1', '0']
+lebles = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 
-def my_predict(path):
-    img = Image.open(path)
+def predict(path):
+    """
 
-    resized_img = cv2.resize(np.asarray(img), (28,28), interpolation=cv2.INTER_AREA)
-
-    # img = Image.fromarray(np.uint8(resized_img)).convert('RGB')
-    # print(resized_img.shape)
-    thresh = cv2.cvtColor(resized_img, cv2.COLOR_GRAY2RGB)
-    thresh = np.expand_dims(thresh, axis = 0)
-    print(thresh.shape)
-    # plt.imshow(thresh)
-    # plt.show()
-    demo_img = Image.fromarray(np.uint8(resized_img)).convert('RGB')
+    :param model: модель
+    :param path: картинка - БЕЛАЯ НА ЧЁРНОМ ФОНЕ
+    :return:
+    """
+    img_pil = Image.open(path)
+    net = torch.load('./simplenet9667.pth')
+    # Прогоняем через ТРАНСФОРМЕР
     transform = model.get_transform()
-    demo_img = transform(demo_img)  # .permute(1, 2, 0)
-    demo_img = Image.fromarray(np.uint8(demo_img)).convert('RGB')
-    # print(type(demo_img))
-
-    demo_img = transform(demo_img)
-    img = demo_img.unsqueeze(0)
-    with open('simplenet.pth', 'rb') as f:
-        simplenet = pickle.load(f)
-    pred = simplenet(img)
-    pred = pred.argmax()
-    return lebles[pred]
+    tr = transform(img_pil)
+    # Добавляем измерение пакета
+    inputs = tr.reshape(1, 1, 28, 28)
+    # Предсказаниие
+    pred = net(inputs)
+    pred = F.softmax(pred, dim=1).argmax()
+    print(f'Предсказание: {pred.item()}')
+    return pred.item()
 
 
 if __name__ == '__main__':
-    # print(my_predict('crop_img.png'))
-    # print(my_predict(r'C:\Users\админ\Downloads\QIsGWFw-nQg.jpg'))
-    # print(my_predict(r'C:\Users\админ\Downloads\Ta184KvmO3s.jpg'))
-    print(my_predict(r'C:\Projects\IT\Python\PyTorch\Mesh_network\img\test\0\num-5560.jpg'))
-    print(my_predict(r'C:\Projects\IT\Python\PyTorch\Mesh_network\img\test\1\num-5265.jpg'))
-    print(my_predict(r'C:\Projects\IT\Python\PyTorch\Mesh_network\img\test\0\num-5577.jpg'))
-    print(my_predict(r'C:\Projects\IT\Python\PyTorch\Mesh_network\img\test\1\num-5266.jpg'))
+    predict(r'C:\Projects\IT\Python\PyTorch\Test\crop_img.png')
+

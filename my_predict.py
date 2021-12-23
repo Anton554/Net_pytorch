@@ -6,6 +6,7 @@ import os
 
 lebles = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
+
 def predict(net, path):
     """
 
@@ -22,7 +23,7 @@ def predict(net, path):
     # !!! Для отладки
     # return
     # Добавляем измерение пакета
-    inputs = tr.reshape(1,1,28,28)
+    inputs = tr.reshape(1, 1, 28, 28)
     print(f'{inputs.shape=}')
     # Предсказаниие
     pred = net(inputs)
@@ -33,7 +34,7 @@ def predict(net, path):
     return pred.item()
 
 
-def predict_folder(path:str, sub_path:str):
+def predict_folder(path: str, sub_path: str):
     """ Предсказание ВСЕХ картинок в папке
 
     :param path: путь к папке
@@ -43,7 +44,7 @@ def predict_folder(path:str, sub_path:str):
     # Загрузка модели
     net = torch.load('./simplenet9667.pth')
     # net = torch.load('./simplenet_9571.pth')
-    ls_img = os.listdir(path+ os.sep + sub_path)
+    ls_img = os.listdir(path + os.sep + sub_path)
     cn = 0
     for img in ls_img:
         img = path + os.sep + sub_path + os.sep + img
@@ -58,4 +59,4 @@ def predict_folder(path:str, sub_path:str):
 
 
 if __name__ == '__main__':
-    predict_folder('./img/test', '6')
+    predict_folder('img/predict/0', '0_yelow')
