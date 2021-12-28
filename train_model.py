@@ -5,6 +5,7 @@ import torch.optim as optim
 
 
 import model
+import model_cnn
 
 
 def train(model, optimizer, loss_fn, train_loader, val_loader, epochs=10):
@@ -24,7 +25,11 @@ def train(model, optimizer, loss_fn, train_loader, val_loader, epochs=10):
         valid_loss = 0.0
         # Включение ОБУЧАЮЩЕГО режима у модели
         model.train()
+        cn = 0
         for batch in train_loader:
+            cn += 1
+            if cn % 10 == 0:
+                print(f'train {cn=} из {len(train_loader)}')
             # После каждого батча обнуляем градиент
             optimizer.zero_grad()
             # inputs - Tensor (64, 3, 28, 28) - картинки для обучения
@@ -43,7 +48,6 @@ def train(model, optimizer, loss_fn, train_loader, val_loader, epochs=10):
             # вычисление значения "функции потерь"
             loss = loss_fn(output, targets)
             # return None
-
             # вычисление градиента "функции потерь" (вектор направление)
             loss.backward()
             # обновление градиента "функции потерь" обратное распространение ошибки
@@ -58,7 +62,11 @@ def train(model, optimizer, loss_fn, train_loader, val_loader, epochs=10):
         # обнуление счетчиков
         num_correct = 0
         num_examples = 0
+        cn = 0
         for batch in val_loader:
+            cn += 1
+            if cn % 10 == 0:
+                print(f'val {cn=} из {len(val_loader)}')
             # inputs - Tensor (64, 3, 28, 38) - картинки для ПРОВЕРКИ
             # targets - правильный ответ Tensor(64,)
             inputs, targets = batch
@@ -85,7 +93,6 @@ def train(model, optimizer, loss_fn, train_loader, val_loader, epochs=10):
         # для каждой эпохи находим среднее арифмитическое значение "функции потерь"
         # в итоге получаем среднее значение функции ошибки ПРОВЕРОЧНОГО пакета
         valid_loss /= len(val_loader)
-
         print('Epoch: {}, Training Loss: {:.2f}, Validation Loss: {:.2f}, accuracy = {:.2f}'.format(epoch, train_loss,
                                                                                                     valid_loss,
                                                                                                     num_correct / num_examples))
@@ -120,13 +127,14 @@ if __name__ == "__main__":
     # Создание загрузчика
     loader = model.DtLoader('./img/train', './img/val', './img/test')
     print('Загрузчик создан')
-    simplenet = model.SimpleNet()
-    optimizator = optim.Adam(simplenet.parameters(), lr=0.001)
+    # net = model.SimpleNet()
+    net = model_cnn.CNNNet()
+    optimizator = optim.Adam(net.parameters(), lr=0.001)
     print('Запуск обучения')
-    train(simplenet, optimizator, torch.nn.CrossEntropyLoss(), loader.train_data_loader, loader.val_data_loader)
-    # print('Сохранение модели')
-    # torch.save(simplenet, 'simplenet.pth')
-    # print('Модель сохранена.')
+    train(net, optimizator, torch.nn.CrossEntropyLoss(), loader.train_data_loader, loader.val_data_loader)
+    print('Сохранение модели')
+    torch.save(net, './net/cnn_net.pth')
+    print('Модель сохранена.')
 
     # Загрузка модели
     # simplenet = torch.load('simplenet.pth')
