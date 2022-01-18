@@ -54,7 +54,7 @@ class CNNNet(nn.Module):
         # Conv2d - 32 x 14 x 14  -> 64 x 14 x 14
         # MaxPool2d - 64 x 14 x 14  -> 64 x 7 x 7
         self.layer2 = nn.Sequential(nn.Conv2d(32, 64, kernel_size=5, stride=1, padding=2),
-                                    nn.ReLU(),
+                                    nn.LeakyReLU(),
                                     nn.MaxPool2d(kernel_size=2, stride=2))
         self.drop_out = nn.Dropout()
         self.fc1 = nn.Linear(7 * 7 * 64, 1000)

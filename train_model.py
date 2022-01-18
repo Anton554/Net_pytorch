@@ -2,8 +2,7 @@ import pickle
 import torch
 from torch.nn import functional as F
 import torch.optim as optim
-
-
+import ansamble
 import model
 import model_cnn
 
@@ -33,7 +32,7 @@ def train(model, optimizer, loss_fn, train_loader, val_loader, epochs=10):
             # После каждого батча обнуляем градиент
             optimizer.zero_grad()
             # inputs - Tensor (64, 3, 28, 28) - картинки для обучения
-            # targets - правильный ответ Tensor(64,)
+            # targets - правильный ответ Tensor(64, 1)
             inputs, targets = batch
             # копируем Tensor в память cpu
             inputs = inputs.to('cpu')
@@ -57,7 +56,7 @@ def train(model, optimizer, loss_fn, train_loader, val_loader, epochs=10):
         # для каждой эпохи находим среднее арифмитическое значение "функции потерь"
         # в итоге получаем среднее значение функции ошибки ТРЕНИРОВОЧНОГО пакета
         train_loss /= len(train_loader)
-        # Включение ПРОВЕРОЧНОГО режима у модели
+        # Включение режима ОЦЕНКИ
         model.eval()
         # обнуление счетчиков
         num_correct = 0
@@ -83,7 +82,7 @@ def train(model, optimizer, loss_fn, train_loader, val_loader, epochs=10):
             находились в диапазоне [0,1] 
             2) max возвращает namedtuple(values, indices), где values максимальное значение каждой строки inputтензора
              в данном измерении dim
-            3) eq вычисляет поэлементное равнство
+            3) eq вычисляет поэлементное равенство
             4) получаем тензор tensor([ True,  True,  True,  True])"""
             correct = torch.eq(torch.max(F.softmax(output, dim=1), dim=1)[1], targets).view(-1)
             # кол-во правильных ответов
@@ -97,18 +96,10 @@ def train(model, optimizer, loss_fn, train_loader, val_loader, epochs=10):
                                                                                                     valid_loss,
                                                                                                     num_correct / num_examples))
 
-
-def dunw_net():
-    with open('simplenet.pth', 'rb') as f:
-        simplenet = pickle.load(f)
-    return simplenet
-
-
 def test(model, test_loader):
     # Load the model that we saved at the end of the training loop
     running_accuracy = 0
     total = 0
-
     with torch.no_grad():
         for data in test_loader:
             inputs, outputs = data
@@ -128,13 +119,13 @@ if __name__ == "__main__":
     loader = model.DtLoader('./img/train', './img/val', './img/test')
     print('Загрузчик создан')
     # net = model.SimpleNet()
-    net = model_cnn.CNNNet()
+    # net = model_cnn.CNNNet()
+    net = ansamble.AnNNet()
     optimizator = optim.Adam(net.parameters(), lr=0.001)
     print('Запуск обучения')
-    train(net, optimizator, torch.nn.CrossEntropyLoss(), loader.train_data_loader, loader.val_data_loader)
+    train(net, optimizator, torch.nn.CrossEntropyLoss(), loader.train_data_loader, loader.val_data_loader, epochs=3)
     print('Сохранение модели')
-    torch.save(net, './net/cnn_net.pth')
+    # torch.save(net.state_dict(), './net/cnn_net.pth')
+    torch.save(net.state_dict(), './net/ans_net.pth')
     print('Модель сохранена.')
 
-    # Загрузка модели
-    # simplenet = torch.load('simplenet.pth')
